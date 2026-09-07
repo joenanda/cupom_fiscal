@@ -1,0 +1,13 @@
+node_modules/
+dist/
+dist-bin/
+storage/documents/*.xml
+storage/documents/*.pdf
+storage/certificates/*
+!storage/certificates/.gitkeep
+storage/temp_update/
+release/
+.env
+.DS_Store
+Thumbs.db
+*.log

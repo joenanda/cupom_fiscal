@@ -1,0 +1,15 @@
+[
+  {
+    "chaveAcesso": "35240811222333000181650010000123451123456780",
+    "cnpjEmitente": "11222333000181",
+    "razaoSocialEmitente": "SUPERMERCADO MODELO BRASIL LTDA",
+    "valorTotal": 58.96,
+    "dataAutorizacao": "2026-09-07T17:45:20.273Z",
+    "numeroProtocolo": "13524462696174",
+    "dataConsulta": "2026-09-07T17:45:20.675Z",
+    "cStat": 100,
+    "statusDescricao": "Autorizado o uso da NFC-e (Ambiente de Teste / Mock)",
+    "possuiXml": true,
+    "possuiPdf": true
+  }
+]

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SEFAZ NFC-e | Download de Cupom Fiscal e DANFE (Mod 65)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- TOPBAR / HEADER -->
+    <header class="topbar">
+      <div class="logo-group">
+        <div class="logo-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+        </div>
+        <div>
+          <h1 class="logo-title">SEFAZ NFC-e <span class="badge-mod">MOD 65</span></h1>
+          <p class="logo-subtitle">Download de Cupom Fiscal e Emissão de DANFE Térmico</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Indicador de Status do Certificado A1 -->
+        <button id="btn-modal-cert" class="cert-status-btn" title="Gerenciar Certificado A1">
+          <span class="status-dot dot-active"></span>
+          <span id="cert-status-text">Certificado A1: Ativo / Mock</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- ÁREA PRINCIPAL DE BUSCA -->
+    <main class="main-content">
+      <!-- BANNER DE ATUALIZAÇÃO DISPONÍVEL (GITHUB RELEASES) -->
+      <div id="update-banner" class="update-banner hidden">
+        <div class="update-banner-content">
+          <div class="update-banner-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+            </svg>
+          </div>
+          <div>
+            <h4 id="update-title">Nova versão disponível!</h4>
+            <p id="update-desc">Atualizações com melhorias na SEFAZ e correções fiscais.</p>
+          </div>
+        </div>
+        <div class="update-banner-actions">
+          <button type="button" id="btn-atualizar-sistema" class="btn-update-now">Atualizar Agora</button>
+          <button type="button" id="btn-dispensar-update" class="btn-icon-close">&times;</button>
+        </div>
+      </div>
+
+      <section class="search-card">
+        <div class="search-header">
+          <h2>Consultar Cupom Fiscal Eletrônico</h2>
+          <p>Digite a chave de acesso de 44 dígitos da NFC-e para obter o XML oficial e o DANFE</p>
+        </div>
+
+        <form id="form-consulta" class="search-form">
+          <div class="input-wrapper">
+            <label for="input-chave" class="input-label">
+              <span>Chave de Acesso da NFC-e (44 dígitos)</span>
+              <span id="chave-counter" class="counter">0 / 44</span>
+            </label>
+            <div class="input-field-group">
+              <input
+                type="text"
+                id="input-chave"
+                placeholder="0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000"
+                maxlength="54"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <button type="button" id="btn-colar" class="btn-icon" title="Colar da Área de Transferência">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                </svg>
+              </button>
+            </div>
+            <!-- Feedback instantâneo de validação -->
+            <div id="chave-feedback" class="validation-feedback hidden"></div>
+          </div>
+
+          <!-- SELETOR DE PROVEDOR E BOTÃO DE BUSCA -->
+          <div class="search-controls">
+            <div class="provider-select-group">
+              <label for="select-provedor" class="select-label">Canal de Integração:</label>
+              <select id="select-provedor" class="custom-select">
+                <option value="MOCK">Modo Demonstração / Mock (Instantâneo)</option>
+                <option value="SEFAZ">SEFAZ Direto (SOAP mTLS com Certificado A1)</option>
+                <option value="FOCUS_NFE">API REST Focus NFe / Parceiro</option>
+              </select>
+            </div>
+
+            <button type="submit" id="btn-consultar" class="btn-primary">
+              <svg class="icon-search" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <span class="btn-text">Consultar e Baixar</span>
+            </button>
+          </div>
+
+          <!-- Chave de Exemplo para Teste Rápido -->
+          <div class="example-box">
+            <span>Dica de Teste:</span>
+            <button type="button" id="btn-usar-exemplo" class="link-example">
+              Usar chave NFC-e válida de exemplo (SP - Mod 65)
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- CARD DE RESULTADO DO CUPOM FISCAL -->
+      <section id="card-resultado" class="result-card hidden">
+        <div class="result-header">
+          <div class="result-status-badge">
+            <span class="badge-status-dot"></span>
+            <span id="res-status-text">AUTORIZADA - USO AUTORIZADO</span>
+          </div>
+          <div class="result-proto">
+            Protocolo SEFAZ: <strong id="res-protocolo">--</strong>
+          </div>
+        </div>
+
+        <div class="result-body">
+          <div class="company-section">
+            <h3 id="res-emitente">SUPERMERCADO MODELO BRASIL LTDA</h3>
+            <p id="res-cnpj" class="meta-info">CNPJ: 11.222.333/0001-81</p>
+            <p id="res-data-emissao" class="meta-info">Data: --</p>
+          </div>
+
+          <div class="amount-section">
+            <span class="amount-label">Valor Total da NFC-e</span>
+            <span id="res-valor" class="amount-value">R$ 0,00</span>
+            <span id="res-qtd-itens" class="amount-items">0 itens</span>
+          </div>
+        </div>
+
+        <!-- TABELA DE ITENS DA NFC-E -->
+        <div id="section-itens" class="items-section hidden">
+          <h4>Itens do Cupom Fiscal</h4>
+          <div class="table-container">
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Código</th>
+                  <th>Descrição do Produto</th>
+                  <th>Qtd</th>
+                  <th>Un</th>
+                  <th>Vl. Unit</th>
+                  <th>Vl. Total</th>
+                </tr>
+              </thead>
+              <tbody id="res-itens-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- AÇÕES DE DOWNLOAD -->
+        <div class="result-actions">
+          <a id="btn-download-xml" class="action-btn btn-xml" target="_blank">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            </svg>
+            <span>Baixar XML Oficial (.xml)</span>
+          </a>
+
+          <a id="btn-download-pdf" class="action-btn btn-pdf" target="_blank">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            <span>Imprimir / Ver DANFE (PDF)</span>
+          </a>
+
+          <button id="btn-ver-xml-modal" class="action-btn btn-secondary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="16 18 22 12 16 6"></polyline>
+              <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+            <span>Ver XML na Tela</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- HISTÓRICO DE CONSULTAS -->
+      <section class="history-card">
+        <div class="history-header">
+          <h3>Últimas NFC-e Consultadas</h3>
+          <span class="history-badge" id="history-count">0 registros</span>
+        </div>
+        <div class="history-list" id="history-container">
+          <div class="empty-history">Nenhum cupom consultado ainda.</div>
+        </div>
+      </section>
+    </main>
+
+    <!-- MODAL DE VISUALIZAÇÃO DE XML -->
+    <div id="modal-xml" class="modal-backdrop hidden">
+      <div class="modal-box modal-lg">
+        <div class="modal-header">
+          <h3>Visualização do XML da NFC-e</h3>
+          <button class="modal-close" id="btn-fechar-modal-xml">&times;</button>
+        </div>
+        <div class="modal-body">
+          <pre id="xml-content-pre" class="code-preview"></pre>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-copiar-xml" class="btn-secondary">Copiar XML</button>
+          <button class="btn-primary" id="btn-fechar-modal-xml-2">Fechar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE CERTIFICADO DIGITAL (WINDOWS STORE OU ARQUIVO PFX) -->
+    <div id="modal-cert" class="modal-backdrop hidden">
+      <div class="modal-box modal-lg">
+        <div class="modal-header">
+          <h3>Gerenciar Certificado Digital (A1 / A3)</h3>
+          <button class="modal-close" id="btn-fechar-modal-cert">&times;</button>
+        </div>
+        <div class="modal-body">
+          <!-- Abas de Seleção de Origem -->
+          <div class="modal-tabs">
+            <button type="button" id="tab-btn-windows" class="tab-btn active">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+              <span>1. Certificados do Windows (PC)</span>
+            </button>
+            <button type="button" id="tab-btn-arquivo" class="tab-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                <polyline points="13 2 13 9 20 9"></polyline>
+              </svg>
+              <span>2. Arquivo .PFX / .P12 em Disco</span>
+            </button>
+          </div>
+
+          <!-- ABA 1: CERTIFICADOS DO WINDOWS -->
+          <div id="tab-content-windows" class="tab-content">
+            <div class="tab-header-action">
+              <p class="modal-desc">
+                Certificados digitais instalados no Windows deste computador (<strong>Cert:\CurrentUser\My</strong>). Selecione o certificado da sua empresa:
+              </p>
+              <button type="button" id="btn-atualizar-windows-certs" class="btn-secondary btn-sm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M23 4v6h-6"></path>
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </svg>
+                <span>Recarregar do Windows</span>
+              </button>
+            </div>
+
+            <div id="windows-certs-list" class="certs-grid">
+              <div class="loading-state">Localizando certificados no Windows...</div>
+            </div>
+          </div>
+
+          <!-- ABA 2: ARQUIVO PFX -->
+          <div id="tab-content-arquivo" class="tab-content hidden">
+            <form id="form-upload-cert">
+              <p class="modal-desc">
+                Caso o certificado <strong>não esteja instalado no Windows</strong>, você pode enviar o arquivo <strong>.pfx</strong> e sua senha:
+              </p>
+
+              <div class="form-group">
+                <label for="cert-file" class="input-label">Selecione o arquivo .pfx ou .p12:</label>
+                <input type="file" id="cert-file" accept=".pfx,.p12" class="file-input" />
+              </div>
+
+              <div class="form-group">
+                <label for="cert-pass" class="input-label">Senha do Certificado:</label>
+                <input type="password" id="cert-pass" placeholder="Digite a senha de proteção" class="text-input" />
+              </div>
+
+              <div id="cert-upload-status" class="alert-box hidden"></div>
+
+              <div class="modal-footer" style="padding: 16px 0 0 0; border-top: none;">
+                <button type="button" class="btn-secondary" id="btn-cancelar-modal-cert">Cancelar</button>
+                <button type="submit" class="btn-primary" id="btn-enviar-cert">Salvar Arquivo PFX</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
