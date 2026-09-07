@@ -50,10 +50,11 @@ export class AutoUpdateService {
       let tamanhoBytes = 0;
 
       if (release.assets && release.assets.length > 0) {
-        // Dá preferência ao pacote zip de atualização ou ao Instalador.exe
+        // Dá preferência ao pacote de atualização rápida (update-vX.X.X.zip) de ~2MB
+        const updateAsset = release.assets.find((a: any) => a.name.toLowerCase().startsWith('update-'));
         const zipAsset = release.assets.find((a: any) => a.name.toLowerCase().endsWith('.zip'));
         const exeAsset = release.assets.find((a: any) => a.name.toLowerCase().endsWith('.exe'));
-        const assetEscolhido = zipAsset || exeAsset || release.assets[0];
+        const assetEscolhido = updateAsset || zipAsset || exeAsset || release.assets[0];
 
         urlDownload = assetEscolhido.browser_download_url;
         nomeArquivo = assetEscolhido.name;
