@@ -50,13 +50,6 @@ if ($NovaVersao) {
 # 3. Compila projeto TypeScript e gera executaveis
 Write-Host "`n[1/5] Recompilando projeto e gerando instaladores .EXE..." -ForegroundColor Yellow
 & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $baseDir "scripts\build-release.ps1")
-$cscPath = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
-$installerSource = Join-Path $baseDir "installer\Setup.cs"
-$installerExe = Join-Path $baseDir "release\Instalador_SistemaCupomFiscal.exe"
-$installerIcon = Join-Path $baseDir "installer\app.ico"
-$installerLogo = Join-Path $baseDir "installer\logo_thumb.png"
-& $cscPath /target:winexe "/out:$installerExe" /r:System.Windows.Forms.dll /r:System.Drawing.dll "/resource:$installerLogo,Logo" "/resource:$installerIcon,AppIcon" "/win32icon:$installerIcon" "$installerSource"
-
 # 4. Cria arquivo ZIP de atualizacao leve (update-vX.X.X.zip)
 $zipUpdatePath = Join-Path $baseDir "release\update-v$versaoAtual.zip"
 Write-Host "`n[2/5] Compactando pacote de atualizacao rapida ($zipUpdatePath)..." -ForegroundColor Yellow
@@ -74,6 +67,15 @@ if (Test-Path $zipCompletoPath) { Remove-Item $zipCompletoPath -Force }
 Push-Location (Join-Path $baseDir "release")
 & "C:\Windows\System32\tar.exe" -a -cf "SistemaCupomFiscal-completo.zip" bin dist public scripts node_modules .env app.ico logo.png SistemaCupomFiscal.exe Criar_Atalho_Area_de_Trabalho.bat
 Pop-Location
+
+# 5.1 Compila Instalador Offline com o Zip Embutido
+Write-Host "[3.5/5] Compilando Instalador Offline (embutindo pacote completo)..." -ForegroundColor Yellow
+$cscPath = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
+$installerSource = Join-Path $baseDir "installer\Setup.cs"
+$installerExe = Join-Path $baseDir "release\Instalador_SistemaCupomFiscal.exe"
+$installerIcon = Join-Path $baseDir "installer\app.ico"
+$installerLogo = Join-Path $baseDir "installer\logo_thumb.png"
+& $cscPath /target:winexe "/out:$installerExe" /r:System.Windows.Forms.dll /r:System.Drawing.dll "/resource:$installerLogo,Logo" "/resource:$installerIcon,AppIcon" "/resource:$zipCompletoPath,PackageZip" "/win32icon:$installerIcon" "$installerSource"
 
 # 6. Inicializacao e Configuracao do Git
 Write-Host "`n[4/5] Preparando commit no repositorio Git..." -ForegroundColor Yellow

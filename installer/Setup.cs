@@ -326,71 +326,52 @@ namespace SistemaCupomFiscal.Installer
                     return;
                 }
 
-                // Caso 2: Instalador avulso (baixa pacote completo da release no GitHub)
+                // Caso 2: Instalador avulso (extrai do pacote embutido no .exe offline)
                 this.Invoke(new Action(() => {
-                    lblStatus.Text = "Conectando ao GitHub para baixar os arquivos...";
-                    progressBar.Style = ProgressBarStyle.Continuous;
-                    progressBar.Value = 0;
+                    lblStatus.Text = "Extraindo arquivos do sistema (instalação offline)...";
+                    progressBar.Style = ProgressBarStyle.Marquee;
                 }));
 
                 string tempDir = Path.Combine(Path.GetTempPath(), "SistemaCupomFiscalInstall");
                 if (!Directory.Exists(tempDir)) Directory.CreateDirectory(tempDir);
                 tempZip = Path.Combine(tempDir, "package.zip");
 
-                webClient = new WebClient();
-                webClient.Headers.Add("User-Agent", "SistemaCupomFiscal-Setup/1.0");
-                webClient.DownloadProgressChanged += (s, ev) => {
+                try
+                {
+                    using (Stream resStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("PackageZip"))
+                    {
+                        if (resStream == null)
+                        {
+                            throw new Exception("O pacote de instalação (PackageZip) não foi encontrado dentro do instalador. O arquivo pode estar corrompido.");
+                        }
+                        
+                        using (FileStream fs = new FileStream(tempZip, FileMode.Create, FileAccess.Write))
+                        {
+                            resStream.CopyTo(fs);
+                        }
+                    }
+
+                    if (!Directory.Exists(installDir)) Directory.CreateDirectory(installDir);
+
+                    ProcessStartInfo psi = new ProcessStartInfo();
+                    psi.FileName = "powershell.exe";
+                    psi.Arguments = string.Format("-NoProfile -ExecutionPolicy Bypass -Command \"Expand-Archive -Path '{0}' -DestinationPath '{1}' -Force\"", tempZip, installDir);
+                    psi.WindowStyle = ProcessWindowStyle.Hidden;
+                    psi.CreateNoWindow = true;
+                    Process p = Process.Start(psi);
+                    p.WaitForExit();
+
+                    try { File.Delete(tempZip); } catch { }
+
+                    ConcluirSucesso();
+                }
+                catch (Exception exExtract)
+                {
                     this.Invoke(new Action(() => {
-                        progressBar.Value = ev.ProgressPercentage;
-                        lblStatus.Text = string.Format("Baixando arquivos do sistema... {0}% ({1:N1} MB)", ev.ProgressPercentage, ev.BytesReceived / 1048576.0);
+                        MessageBox.Show("Erro ao descompactar: " + exExtract.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        this.Close();
                     }));
-                };
-                webClient.DownloadFileCompleted += (s, ev) => {
-                    if (ev.Error != null)
-                    {
-                        this.Invoke(new Action(() => {
-                            MessageBox.Show(
-                                "Não foi possível baixar os arquivos automaticamente do GitHub:\n" + ev.Error.Message,
-                                "Aviso de Instalação",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Warning
-                            );
-                            this.Close();
-                        }));
-                        return;
-                    }
-
-                    this.Invoke(new Action(() => {
-                        lblStatus.Text = "Extraindo arquivos e configurando atalhos...";
-                        progressBar.Style = ProgressBarStyle.Marquee;
-                    }));
-
-                    try
-                    {
-                        if (!Directory.Exists(installDir)) Directory.CreateDirectory(installDir);
-
-                        ProcessStartInfo psi = new ProcessStartInfo();
-                        psi.FileName = "powershell.exe";
-                        psi.Arguments = string.Format("-NoProfile -ExecutionPolicy Bypass -Command \"Expand-Archive -Path '{0}' -DestinationPath '{1}' -Force\"", tempZip, installDir);
-                        psi.WindowStyle = ProcessWindowStyle.Hidden;
-                        psi.CreateNoWindow = true;
-                        Process p = Process.Start(psi);
-                        p.WaitForExit();
-
-                        try { File.Delete(tempZip); } catch { }
-
-                        ConcluirSucesso();
-                    }
-                    catch (Exception exExtract)
-                    {
-                        this.Invoke(new Action(() => {
-                            MessageBox.Show("Erro ao descompactar: " + exExtract.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            this.Close();
-                        }));
-                    }
-                };
-
-                webClient.DownloadFileAsync(new Uri(Setup.ZIP_DOWNLOAD_URL), tempZip);
+                }
             }
             catch (Exception ex)
             {
