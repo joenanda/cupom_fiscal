@@ -81,10 +81,26 @@
         </div>
       </div>
 
+      <!-- TABS NAV -->
+      <div class="module-tabs">
+        <button class="tab-btn active" id="tab-download" data-target="download">
+          <span class="tab-icon">📥</span>
+          Baixar Cupom / DANFE
+        </button>
+        <button class="tab-btn" id="tab-validar" data-target="validar">
+          <span class="tab-icon">🛡️</span>
+          Validar Status na SEFAZ
+        </button>
+      </div>
+
       <section class="search-card">
-        <div class="search-header">
+        <div class="search-header" id="header-download">
           <h2>Consultar Cupom Fiscal Eletrônico</h2>
           <p>Digite a chave de acesso de 44 dígitos da NFC-e para obter o XML oficial e o DANFE</p>
+        </div>
+        <div class="search-header hidden" id="header-validar">
+          <h2>Validar Situação na SEFAZ</h2>
+          <p>Digite a chave para consultar o status (Autorizada, Cancelada) em tempo real, sem baixar o XML</p>
         </div>
 
         <form id="form-consulta" class="search-form">
@@ -143,7 +159,31 @@
         </form>
       </section>
 
-      <!-- CARD DE RESULTADO DO CUPOM FISCAL -->
+      <!-- CARD DE RESULTADO DA VALIDAÇÃO SEFAZ -->
+      <section id="card-validacao" class="result-card hidden">
+        <div class="result-header">
+          <div class="result-status-badge" id="val-status-badge">
+            <span class="badge-status-dot"></span>
+            <span id="val-status-text">--</span>
+          </div>
+          <div class="result-proto">
+            <span class="provider-label">SEFAZ Oficial</span>
+          </div>
+        </div>
+        <div class="result-body">
+          <div class="company-section">
+            <h3 id="val-motivo">--</h3>
+            <p id="val-protocolo" class="meta-info">Protocolo: --</p>
+            <p id="val-data" class="meta-info">Data: --</p>
+          </div>
+          <div class="amount-section">
+            <span class="amount-label">Código (cStat)</span>
+            <span id="val-cstat" class="amount-value">--</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- CARD DE RESULTADO DO CUPOM FISCAL (DOWNLOAD) -->
       <section id="card-resultado" class="result-card hidden">
         <div class="result-header">
           <div class="result-status-badge">

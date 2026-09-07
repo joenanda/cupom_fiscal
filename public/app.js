@@ -28,6 +28,43 @@ const sectionItens = document.getElementById('section-itens');
 const resItensTbody = document.getElementById('res-itens-tbody');
 const btnDownloadXml = document.getElementById('btn-download-xml');
 const btnDownloadPdf = document.getElementById('btn-download-pdf');
+
+// Elementos das Abas e Validação
+const tabDownload = document.getElementById('tab-download');
+const tabValidar = document.getElementById('tab-validar');
+const headerDownload = document.getElementById('header-download');
+const headerValidar = document.getElementById('header-validar');
+const cardValidacao = document.getElementById('card-validacao');
+const valStatusBadge = document.getElementById('val-status-badge');
+const valStatusText = document.getElementById('val-status-text');
+const valMotivo = document.getElementById('val-motivo');
+const valProtocolo = document.getElementById('val-protocolo');
+const valData = document.getElementById('val-data');
+const valCstat = document.getElementById('val-cstat');
+
+let appMode = 'download';
+
+if (tabDownload && tabValidar) {
+  tabDownload.addEventListener('click', () => {
+    appMode = 'download';
+    tabDownload.classList.add('active');
+    tabValidar.classList.remove('active');
+    headerDownload.classList.remove('hidden');
+    headerValidar.classList.add('hidden');
+    btnConsultar.querySelector('.btn-text').innerText = 'Consultar e Baixar';
+    cardValidacao.classList.add('hidden');
+  });
+
+  tabValidar.addEventListener('click', () => {
+    appMode = 'validar';
+    tabValidar.classList.add('active');
+    tabDownload.classList.remove('active');
+    headerValidar.classList.remove('hidden');
+    headerDownload.classList.add('hidden');
+    btnConsultar.querySelector('.btn-text').innerText = 'Validar na SEFAZ';
+    cardResultado.classList.add('hidden');
+  });
+}
 const btnVerXmlModal = document.getElementById('btn-ver-xml-modal');
 
 // Elementos de Histórico
@@ -149,10 +186,15 @@ formConsulta.addEventListener('submit', async (e) => {
 
   // Estado de carregamento
   btnConsultar.disabled = true;
-  btnConsultar.querySelector('.btn-text').innerText = 'Consultando SEFAZ...';
+  const textoOriginalBtn = appMode === 'download' ? 'Consultar e Baixar' : 'Validar na SEFAZ';
+  btnConsultar.querySelector('.btn-text').innerText = appMode === 'download' ? 'Consultando...' : 'Validando...';
+  
+  cardResultado.classList.add('hidden');
+  if (cardValidacao) cardValidacao.classList.add('hidden');
 
   try {
-    const res = await fetch('/api/v1/nfce/consultar', {
+    const endpoint = appMode === 'download' ? '/api/v1/nfce/consultar' : '/api/v1/nfce/validar-sefaz';
+    const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chave: chaveLimpa, provedor }),
@@ -160,19 +202,45 @@ formConsulta.addEventListener('submit', async (e) => {
 
     const data = await res.json();
 
-    if (!res.ok || !data.sucesso) {
-      throw new Error(data.erro || data.resultado?.mensagem || 'Falha ao consultar NFC-e.');
+    if (!res.ok) {
+      throw new Error(data.erro || data.mensagem || 'Falha na comunicação com o servidor');
     }
 
-    exibirResultado(data.resultado);
-    carregarHistorico();
+    if (!data.sucesso) {
+      alert(`Consulta retornou sem sucesso: ${data.mensagem || data.statusDescricao || (data.resultado && data.resultado.mensagem) || 'Erro desconhecido'}`);
+    }
+
+    if (appMode === 'validar') {
+      exibirResultadoValidacao(data);
+    } else {
+      exibirResultado(data.resultado);
+      carregarHistorico();
+    }
   } catch (err) {
-    alert(`Erro na consulta: ${err.message}`);
+    alert(`Erro na requisição: ${err.message}`);
   } finally {
     btnConsultar.disabled = false;
-    btnConsultar.querySelector('.btn-text').innerText = 'Consultar e Baixar';
+    btnConsultar.querySelector('.btn-text').innerText = textoOriginalBtn;
   }
 });
+
+function exibirResultadoValidacao(dados) {
+  cardValidacao.classList.remove('hidden');
+  
+  valStatusBadge.className = 'result-status-badge';
+  if (dados.cStat === 100 || dados.cStat === 150) {
+    valStatusBadge.classList.add('status-authorized');
+    valStatusText.innerText = 'AUTORIZADA';
+  } else {
+    valStatusBadge.classList.add('status-error');
+    valStatusText.innerText = 'NÃO AUTORIZADA / CANCELADA';
+  }
+
+  valMotivo.innerText = dados.statusDescricao || 'Sem descrição';
+  valProtocolo.innerText = `Protocolo: ${dados.numeroProtocolo || '--'}`;
+  valData.innerText = `Data Sefaz: ${dados.dataAutorizacao || '--'}`;
+  valCstat.innerText = dados.cStat || '--';
+}
 
 function exibirResultado(res) {
   cardResultado.classList.remove('hidden');

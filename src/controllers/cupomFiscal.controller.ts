@@ -169,6 +169,53 @@ export class CupomFiscalController {
   };
 
   /**
+   * POST /api/v1/nfce/validar-sefaz
+   * Consulta a situação atual da nota na SEFAZ (nfeConsulta2) sem realizar download do XML ou PDF.
+   */
+  public validarStatusSefaz = async (req: Request, res: Response): Promise<void> => {
+    const { chave, provedor } = req.body;
+
+    const chaveObj = ChaveAcessoNFCe.criar(chave);
+
+    let provedorFinal = provedor || (process.env.INTEGRATION_PROVIDER as any) || 'MOCK';
+    if ((provedorFinal === 'SEFAZ' || provedorFinal === 'WINDOWS_CERT') && CupomFiscalController._certificadoWindowsAtivo) {
+      provedorFinal = 'WINDOWS_CERT';
+    }
+
+    const adapter = FiscalAdapterFactory.criar({
+      provedor: provedorFinal,
+      windowsThumbprint: CupomFiscalController._certificadoWindowsAtivo?.thumbprint,
+      caminhoCertificado: process.env.CERTIFICATE_PATH,
+      senhaCertificado: process.env.CERTIFICATE_PASSWORD,
+    });
+
+    const resultado = await adapter.consultarEBaixarNFCe(chaveObj);
+
+    // Registra a consulta básica no histórico, marcando que não baixou arquivo
+    this._storageService.registrarMetadados({
+      chaveAcesso: chaveObj.valor,
+      cnpjEmitente: resultado.cnpjEmitente,
+      razaoSocialEmitente: resultado.razaoSocialEmitente,
+      valorTotal: resultado.valorTotal,
+      dataAutorizacao: resultado.dataAutorizacao,
+      numeroProtocolo: resultado.numeroProtocolo,
+      dataConsulta: new Date().toISOString(),
+      cStat: resultado.cStat,
+      statusDescricao: resultado.statusDescricao,
+      possuiXml: false,
+      possuiPdf: false,
+    });
+
+    res.json({
+      sucesso: resultado.sucesso,
+      cStat: resultado.cStat,
+      statusDescricao: resultado.statusDescricao,
+      numeroProtocolo: resultado.numeroProtocolo,
+      dataAutorizacao: resultado.dataAutorizacao
+    });
+  };
+
+  /**
    * GET /api/v1/nfce/:chave/xml
    * Download do arquivo XML
    */

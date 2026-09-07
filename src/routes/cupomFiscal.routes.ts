@@ -35,6 +35,7 @@ const exigirLicencaAtiva = (_req: any, _res: any, next: any) => {
 
 // Rotas de Cupons Fiscais (NFC-e Modelo 65 - Protegidas por Licença)
 router.post('/nfce/validar', controller.validarChave);
+router.post('/nfce/validar-sefaz', exigirLicencaAtiva, controller.validarStatusSefaz);
 router.post('/nfce/consultar', exigirLicencaAtiva, controller.consultarEBaixar);
 router.get('/nfce/historico', controller.listarHistorico);
 router.get('/nfce/:chave/xml', exigirLicencaAtiva, controller.baixarXml);
