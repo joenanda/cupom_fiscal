@@ -117,7 +117,7 @@ if ($Token) {
     Write-Host "`n[GitHub API] Criando Release oficial v$versaoAtual no GitHub..." -ForegroundColor Yellow
     try {
         $desc = "Versao $versaoAtual`n`n$Mensagem`n`nInstalador autonomo: Instalador_SistemaCupomFiscal.exe"
-        $releaseBody = @{
+        $json = @{
             tag_name = "v$versaoAtual"
             target_commitish = "main"
             name = "Versao $versaoAtual"
@@ -125,6 +125,7 @@ if ($Token) {
             draft = $false
             prerelease = $false
         } | ConvertTo-Json
+        $bodyBytes = [System.Text.Encoding]::UTF8.GetBytes($json)
 
         $headers = @{
             "Authorization" = "token $Token"
@@ -132,7 +133,7 @@ if ($Token) {
             "User-Agent" = "SistemaCupomFiscal-Deployer/1.0"
         }
 
-        $relResponse = Invoke-RestMethod -Uri "https://api.github.com/repos/joenanda/cupom_fiscal/releases" -Method Post -Headers $headers -Body $releaseBody -ContentType "application/json"
+        $relResponse = Invoke-RestMethod -Uri "https://api.github.com/repos/joenanda/cupom_fiscal/releases" -Method Post -Headers $headers -Body $bodyBytes -ContentType "application/json; charset=utf-8"
         Write-Host "[OK] Release criada: $($relResponse.html_url)" -ForegroundColor Green
 
         if ($relResponse.upload_url) {
