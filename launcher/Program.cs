@@ -1,6 +1,8 @@
 using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -10,6 +12,7 @@ namespace SistemaCupomFiscal
     {
         private Process serverProcess = null;
         private NotifyIcon trayIcon = null;
+        private bool isClosing = false;
 
         public MainForm()
         {
@@ -21,6 +24,33 @@ namespace SistemaCupomFiscal
             this.Height = 0;
 
             string appDir = AppDomain.CurrentDomain.BaseDirectory;
+
+            // Carrega ícone oficial (Guará)
+            Icon appIcon = null;
+            string iconPath = Path.Combine(appDir, "app.ico");
+            if (File.Exists(iconPath))
+            {
+                try { appIcon = new Icon(iconPath); } catch { }
+            }
+            if (appIcon == null)
+            {
+                try
+                {
+                    Stream resStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Logo");
+                    if (resStream != null)
+                    {
+                        using (Bitmap bmp = new Bitmap(resStream))
+                        {
+                            IntPtr hIcon = bmp.GetHicon();
+                            appIcon = Icon.FromHandle(hIcon);
+                        }
+                    }
+                }
+                catch { }
+            }
+            if (appIcon == null) appIcon = SystemIcons.Shield;
+
+            this.Icon = appIcon;
 
             string nodePath = Path.Combine(appDir, "bin", "node.exe");
             if (!File.Exists(nodePath)) nodePath = Path.Combine(appDir, "node.exe");
@@ -54,6 +84,14 @@ namespace SistemaCupomFiscal
             try
             {
                 serverProcess = Process.Start(psi);
+                if (serverProcess != null)
+                {
+                    serverProcess.EnableRaisingEvents = true;
+                    // Se o servidor for encerrado via botão da tela web, fecha o launcher imediatamente
+                    serverProcess.Exited += (s, e) => {
+                        EncerrarTudo();
+                    };
+                }
             }
             catch (Exception ex)
             {
@@ -67,51 +105,96 @@ namespace SistemaCupomFiscal
                 return;
             }
 
-            // Configura o ícone na barra de tarefas / bandeja do sistema (System Tray)
+            // Configura o ícone na bandeja do sistema (System Tray)
             trayIcon = new NotifyIcon();
-            trayIcon.Text = "Sistema Cupom Fiscal NFC-e (Mod 65)";
-            trayIcon.Icon = System.Drawing.SystemIcons.Shield;
+            trayIcon.Text = "Sistema Cupom Fiscal NFC-e";
+            trayIcon.Icon = appIcon;
             trayIcon.Visible = true;
 
             ContextMenu menu = new ContextMenu();
+
+            MenuItem mHeader = new MenuItem("Sistema Cupom Fiscal NFC-e (Mod 65)");
+            mHeader.Enabled = false;
+            menu.MenuItems.Add(mHeader);
+
+            MenuItem mDev = new MenuItem("Criado e Desenvolvido por GUARÁ SEGURANÇA E INTERNET");
+            mDev.Enabled = false;
+            menu.MenuItems.Add(mDev);
+
+            menu.MenuItems.Add("-");
+
             menu.MenuItems.Add("Abrir no Navegador (http://localhost:3000)", (s, e) => {
                 Process.Start("http://localhost:3000");
             });
+
             menu.MenuItems.Add("-");
-            menu.MenuItems.Add("Encerrar Sistema Fiscal", (s, e) => {
-                this.Close();
+
+            MenuItem mExit = new MenuItem("Encerrar Sistema Fiscal", (s, e) => {
+                EncerrarTudo();
             });
+            menu.MenuItems.Add(mExit);
+
             trayIcon.ContextMenu = menu;
             trayIcon.DoubleClick += (s, e) => Process.Start("http://localhost:3000");
 
             trayIcon.ShowBalloonTip(
                 3000,
                 "Sistema Fiscal NFC-e Online",
-                "O sistema está pronto. Clique duas vezes neste ícone para abrir a tela.",
+                "Desenvolvido por GUARÁ SEGURANÇA E INTERNET.\nClique duas vezes para abrir a tela.",
                 ToolTipIcon.Info
             );
 
             this.FormClosing += (s, e) => {
-                try
-                {
-                    if (trayIcon != null)
-                    {
-                        trayIcon.Visible = false;
-                        trayIcon.Dispose();
-                    }
+                EncerrarTudo();
+            };
 
-                    if (serverProcess != null && !serverProcess.HasExited)
+            Application.ApplicationExit += (s, e) => {
+                EncerrarTudo();
+            };
+        }
+
+        private void EncerrarTudo()
+        {
+            if (isClosing) return;
+            isClosing = true;
+
+            try
+            {
+                if (trayIcon != null)
+                {
+                    trayIcon.Visible = false;
+                    trayIcon.Dispose();
+                    trayIcon = null;
+                }
+
+                if (serverProcess != null && !serverProcess.HasExited)
+                {
+                    // Encerra forçadamente a árvore de processos do Node via taskkill
+                    try
+                    {
+                        ProcessStartInfo psiKill = new ProcessStartInfo("taskkill", "/PID " + serverProcess.Id + " /T /F");
+                        psiKill.CreateNoWindow = true;
+                        psiKill.UseShellExecute = false;
+                        Process p = Process.Start(psiKill);
+                        p.WaitForExit(1500);
+                    }
+                    catch { }
+
+                    if (!serverProcess.HasExited)
                     {
                         serverProcess.Kill();
                     }
                 }
-                catch { }
-            };
+            }
+            catch { }
+            finally
+            {
+                Environment.Exit(0);
+            }
         }
 
         protected override void SetVisibleCore(bool value)
         {
-            // Impede que o form invisível apareça na tela inicial
             base.SetVisibleCore(false);
         }
 

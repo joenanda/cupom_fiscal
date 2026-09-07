@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SEFAZ NFC-e | Download de Cupom Fiscal e DANFE (Mod 65)</title>
+  <title>SEFAZ NFC-e | Guará Segurança e Internet</title>
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -14,16 +15,14 @@
     <!-- TOPBAR / HEADER -->
     <header class="topbar">
       <div class="logo-group">
-        <div class="logo-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="16" y1="13" x2="8" y2="13"></line>
-            <line x1="16" y1="17" x2="8" y2="17"></line>
-            <polyline points="10 9 9 9 8 9"></polyline>
-          </svg>
+        <div class="logo-icon-img-wrapper">
+          <img src="assets/logo.png" alt="Guará Segurança e Internet" class="app-logo-img">
         </div>
         <div>
+          <div class="brand-badge">
+            <span class="badge-dot-orange"></span>
+            CRIADO E DESENVOLVIDO POR <strong>GUARÁ SEGURANÇA E INTERNET</strong>
+          </div>
           <h1 class="logo-title">SEFAZ NFC-e <span class="badge-mod">MOD 65</span></h1>
           <p class="logo-subtitle">Download de Cupom Fiscal e Emissão de DANFE Térmico</p>
         </div>
@@ -38,6 +37,15 @@
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
             <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
           </svg>
+        </button>
+
+        <!-- Botão Encerrar Sistema -->
+        <button id="btn-encerrar-sistema" class="btn-shutdown" title="Encerrar Sistema e Fechar Servidor">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+            <line x1="12" y1="2" x2="12" y2="12"></line>
+          </svg>
+          <span>Encerrar Sistema</span>
         </button>
       </div>
     </header>
@@ -305,6 +313,44 @@
         </div>
       </div>
     </div>
+
+    <!-- MODAL DE CONFIRMAÇÃO DE ENCERRAMENTO -->
+    <div id="modal-encerrar" class="modal-backdrop hidden">
+      <div class="modal-box modal-sm">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <div class="danger-icon-badge">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+                <line x1="12" y1="2" x2="12" y2="12"></line>
+              </svg>
+            </div>
+            <h3>Encerrar Sistema</h3>
+          </div>
+          <button class="modal-close" id="btn-close-modal-encerrar">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size: 1rem; color: #f1f5f9; font-weight: 600; margin-bottom: 8px;">
+            Deseja realmente fechar o Sistema Cupom Fiscal?
+          </p>
+          <p class="modal-subtext" style="color: #94a3b8; line-height: 1.5;">
+            Isso finalizará o servidor e todos os processos em segundo plano imediatamente, sem necessidade de abrir o Gerenciador de Tarefas.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" id="btn-cancelar-encerrar">Cancelar</button>
+          <button type="button" class="btn-danger" id="btn-confirmar-encerrar">Sim, Encerrar Sistema</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RODAPÉ OFICIAL GUARÁ -->
+    <footer class="app-footer">
+      <div class="footer-content">
+        <img src="assets/logo.png" alt="Guará" class="footer-mini-logo">
+        <span>Sistema Cupom Fiscal Eletrônico NFC-e (Modelo 65) • Criado e desenvolvido por <strong>GUARÁ SEGURANÇA E INTERNET</strong></span>
+      </div>
+    </footer>
   </div>
 
   <script src="app.js"></script>

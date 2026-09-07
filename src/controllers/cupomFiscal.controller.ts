@@ -313,4 +313,20 @@ export class CupomFiscalController {
       mensagem: 'Atualização aplicada com sucesso! Reinicie o sistema se necessário para carregar as alterações.',
     });
   };
+
+  /**
+   * POST /api/v1/sistema/encerrar
+   * Finaliza o servidor e fecha a aplicação por completo
+   */
+  public encerrarSistema = async (_req: Request, res: Response): Promise<void> => {
+    res.json({
+      sucesso: true,
+      mensagem: 'Sistema e processos finalizados com sucesso.',
+    });
+
+    setTimeout(() => {
+      console.log('>>> [SHUTDOWN] Encerrando processo do servidor fiscal e aplicação...');
+      process.exit(0);
+    }, 500);
+  };
 }

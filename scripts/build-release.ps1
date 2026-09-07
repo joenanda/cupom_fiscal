@@ -47,17 +47,23 @@ STORAGE_LOCAL_DIR=./storage/documents
 AUTO_OPEN_BROWSER=true
 "@ -Encoding UTF8
 
-# 5. Compila o executável principal SistemaCupomFiscal.exe
+# 5. Compila o executável principal SistemaCupomFiscal.exe com ícone oficial
 Write-Host "[5/6] Compilando executável nativo Windows (SistemaCupomFiscal.exe)..." -ForegroundColor Yellow
 $cscPath = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
 $sourceFile = Join-Path $baseDir "launcher\Program.cs"
 $outputExe = Join-Path $releaseDir "SistemaCupomFiscal.exe"
+$iconFile = Join-Path $baseDir "launcher\app.ico"
+$logoFile = Join-Path $baseDir "launcher\logo_thumb.png"
 
-& $cscPath /target:winexe /out:$outputExe /r:System.Windows.Forms.dll /r:System.Drawing.dll $sourceFile
+& $cscPath /target:winexe "/out:$outputExe" /r:System.Windows.Forms.dll /r:System.Drawing.dll "/resource:$logoFile,Logo" "/win32icon:$iconFile" "$sourceFile"
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Falha na compilação do executável C#!"
     exit 1
 }
+
+# Copia ícone para a release
+Copy-Item $iconFile (Join-Path $releaseDir "app.ico") -Force
+Copy-Item (Join-Path $baseDir "public\assets\logo.png") (Join-Path $releaseDir "logo.png") -Force
 
 # 6. Cria script de 1 clique para gerar atalho na Área de Trabalho do cliente
 Write-Host "[6/6] Criando script de atalho para Área de Trabalho..." -ForegroundColor Yellow

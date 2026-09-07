@@ -52,7 +52,9 @@ Write-Host "`n[1/5] Recompilando projeto e gerando instaladores .EXE..." -Foregr
 $cscPath = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
 $installerSource = Join-Path $baseDir "installer\Setup.cs"
 $installerExe = Join-Path $baseDir "release\Instalador_SistemaCupomFiscal.exe"
-& $cscPath /target:winexe /out:$installerExe /r:System.Windows.Forms.dll /r:System.Drawing.dll $installerSource
+$installerIcon = Join-Path $baseDir "installer\app.ico"
+$installerLogo = Join-Path $baseDir "installer\logo_thumb.png"
+& $cscPath /target:winexe "/out:$installerExe" /r:System.Windows.Forms.dll /r:System.Drawing.dll "/resource:$installerLogo,Logo" "/win32icon:$installerIcon" "$installerSource"
 
 # 4. Cria arquivo ZIP de atualizacao leve (update-vX.X.X.zip)
 $zipUpdatePath = Join-Path $baseDir "release\update-v$versaoAtual.zip"

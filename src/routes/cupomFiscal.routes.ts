@@ -38,4 +38,7 @@ router.get('/certificados/status', controller.statusCertificado);
 router.get('/sistema/atualizacao', controller.verificarAtualizacao);
 router.post('/sistema/atualizar', controller.aplicarAtualizacao);
 
+// Rota de Encerramento Completo da Aplicação
+router.post('/sistema/encerrar', controller.encerrarSistema);
+
 export default router;

@@ -486,6 +486,52 @@ btnDispensarUpdate.addEventListener('click', () => {
   updateBanner.classList.add('hidden');
 });
 
+// =========================================================================
+// ENCERRAMENTO LIMPO DO SISTEMA
+// =========================================================================
+const btnEncerrarSistema = document.getElementById('btn-encerrar-sistema');
+const modalEncerrar = document.getElementById('modal-encerrar');
+const btnCloseModalEncerrar = document.getElementById('btn-close-modal-encerrar');
+const btnCancelarEncerrar = document.getElementById('btn-cancelar-encerrar');
+const btnConfirmarEncerrar = document.getElementById('btn-confirmar-encerrar');
+
+if (btnEncerrarSistema && modalEncerrar) {
+  btnEncerrarSistema.addEventListener('click', () => {
+    modalEncerrar.classList.remove('hidden');
+  });
+
+  const fecharModalEncerrar = () => modalEncerrar.classList.add('hidden');
+  if (btnCloseModalEncerrar) btnCloseModalEncerrar.addEventListener('click', fecharModalEncerrar);
+  if (btnCancelarEncerrar) btnCancelarEncerrar.addEventListener('click', fecharModalEncerrar);
+
+  if (btnConfirmarEncerrar) {
+    btnConfirmarEncerrar.addEventListener('click', async () => {
+      btnConfirmarEncerrar.disabled = true;
+      btnConfirmarEncerrar.innerText = 'Encerrando...';
+
+      try {
+        await fetch('/api/v1/sistema/encerrar', { method: 'POST' });
+      } catch {
+        // Ignora erro pois o servidor encerra na hora
+      }
+
+      document.body.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #0f172a; color: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; text-align: center; padding: 20px;">
+          <img src="assets/logo.png" style="width: 90px; height: 90px; object-fit: contain; margin-bottom: 20px;" alt="Guará">
+          <h2 style="color: #38bdf8; margin-bottom: 8px;">Sistema Fiscal Encerrado com Sucesso</h2>
+          <p style="color: #f97316; font-weight: 700; margin-bottom: 16px; font-size: 0.9rem;">GUARÁ SEGURANÇA E INTERNET</p>
+          <p style="color: #94a3b8; max-width: 440px; margin-bottom: 24px; line-height: 1.6;">O servidor local e todos os processos foram finalizados com segurança. Você já pode fechar esta aba do navegador.</p>
+          <button onclick="window.close()" style="background: #1e293b; color: #fff; border: 1px solid #334155; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-weight: 600;">Fechar Aba</button>
+        </div>
+      `;
+
+      setTimeout(() => {
+        try { window.close(); } catch {}
+      }, 1500);
+    });
+  }
+}
+
 // Inicialização
 verificarCertificadoStatus();
 carregarHistorico();
