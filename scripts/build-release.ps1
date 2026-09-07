@@ -55,6 +55,11 @@ $outputExe = Join-Path $releaseDir "SistemaCupomFiscal.exe"
 $iconFile = Join-Path $baseDir "launcher\app.ico"
 $logoFile = Join-Path $baseDir "launcher\logo_thumb.png"
 
+$icoTool = Join-Path $baseDir "scripts\MakePerfectIco.exe"
+if (Test-Path $icoTool) {
+    & $icoTool | Out-Null
+}
+
 & $cscPath /target:winexe "/out:$outputExe" /r:System.Windows.Forms.dll /r:System.Drawing.dll "/resource:$logoFile,Logo" "/win32icon:$iconFile" "$sourceFile"
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Falha na compilação do executável C#!"
@@ -75,8 +80,8 @@ echo ================================================================
 echo   INSTALADOR DE ATALHO - SISTEMA CUPOM FISCAL NFC-e
 echo ================================================================
 echo.
-powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "`$ws = New-Object -ComObject WScript.Shell; `$s = `$ws.CreateShortcut([System.IO.Path]::Combine([Environment]::GetFolderPath('Desktop'), 'Sistema Cupom Fiscal NFC-e.lnk')); `$s.TargetPath = [System.IO.Path]::Combine((Get-Location), 'SistemaCupomFiscal.exe'); `$s.WorkingDirectory = (Get-Location).Path; `$s.Description = 'Consulta e Download de Cupom Fiscal Eletrônico NFC-e'; `$s.Save();"
-echo [OK] Atalho criado na sua Area de Trabalho com sucesso!
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "`$ws = New-Object -ComObject WScript.Shell; `$s = `$ws.CreateShortcut([System.IO.Path]::Combine([Environment]::GetFolderPath('Desktop'), 'Sistema Cupom Fiscal NFC-e.lnk')); `$s.TargetPath = [System.IO.Path]::Combine((Get-Location), 'SistemaCupomFiscal.exe'); `$s.WorkingDirectory = (Get-Location).Path; `$s.Description = 'Consulta e Download de Cupom Fiscal Eletrônico NFC-e - GUARÁ SEGURANÇA E INTERNET'; `$ico = [System.IO.Path]::Combine((Get-Location), 'app.ico'); if (Test-Path `$ico) { `$s.IconLocation = `$ico + ',0' }; `$s.Save(); [System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms');"
+echo [OK] Atalho criado na sua Area de Trabalho com o icone oficial da Guara Seguranca e Internet!
 echo.
 echo Para abrir o sistema, clique no atalho 'Sistema Cupom Fiscal NFC-e' na sua Area de Trabalho
 echo ou execute diretamente o arquivo 'SistemaCupomFiscal.exe'.

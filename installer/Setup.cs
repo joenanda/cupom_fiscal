@@ -81,27 +81,24 @@ namespace SistemaCupomFiscal.Installer
             {
                 string iconPath = Path.Combine(installDir, "app.ico");
 
-                // 1. Se app.ico não existir no destino, extrai do recurso embutido AppIcon
-                if (!File.Exists(iconPath))
+                // 1. Extrai ou atualiza sempre app.ico com o ícone de alta resolução oficial da Guará
+                try
                 {
-                    try
+                    Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream("AppIcon");
+                    if (s != null)
                     {
-                        Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream("AppIcon");
-                        if (s != null)
+                        using (FileStream fs = new FileStream(iconPath, FileMode.Create, FileAccess.Write))
                         {
-                            using (FileStream fs = new FileStream(iconPath, FileMode.Create, FileAccess.Write))
+                            byte[] buffer = new byte[8192];
+                            int bytesRead;
+                            while ((bytesRead = s.Read(buffer, 0, buffer.Length)) > 0)
                             {
-                                byte[] buffer = new byte[8192];
-                                int bytesRead;
-                                while ((bytesRead = s.Read(buffer, 0, buffer.Length)) > 0)
-                                {
-                                    fs.Write(buffer, 0, bytesRead);
-                                }
+                                fs.Write(buffer, 0, bytesRead);
                             }
                         }
                     }
-                    catch { }
                 }
+                catch { }
 
                 if (!File.Exists(iconPath)) iconPath = installedExe;
 
@@ -298,6 +295,17 @@ namespace SistemaCupomFiscal.Installer
         {
             try
             {
+                // Encerra qualquer processo em execução para garantir que arquivos e ícones sejam sobrescritos
+                try
+                {
+                    ProcessStartInfo psiKill = new ProcessStartInfo("taskkill", "/IM SistemaCupomFiscal.exe /F");
+                    psiKill.CreateNoWindow = true;
+                    psiKill.UseShellExecute = false;
+                    Process pKill = Process.Start(psiKill);
+                    pKill.WaitForExit(1500);
+                }
+                catch { }
+
                 string localExeSource = Path.Combine(sourceDir, "SistemaCupomFiscal.exe");
 
                 // Caso 1: Instalação a partir da pasta local da release
