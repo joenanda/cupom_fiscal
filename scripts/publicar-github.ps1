@@ -138,7 +138,7 @@ if ($Token) {
         Write-Host "[OK] Release criada: $($relResponse.html_url)" -ForegroundColor Green
 
         if ($relResponse.upload_url) {
-            $uploadBase = $relResponse.upload_url -replace '\{\?name,label\}', ''
+            $uploadBase = if ($relResponse.upload_url.Contains('{')) { $relResponse.upload_url.Substring(0, $relResponse.upload_url.IndexOf('{')) } else { $relResponse.upload_url }
 
             # Upload Instalador
             Write-Host "[GitHub API] Fazendo upload do Instalador_SistemaCupomFiscal.exe..." -ForegroundColor Yellow
