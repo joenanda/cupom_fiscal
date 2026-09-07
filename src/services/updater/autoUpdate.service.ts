@@ -32,11 +32,16 @@ export class AutoUpdateService {
     const urlApi = `https://api.github.com/repos/${this.REPO_OWNER}/${this.REPO_NAME}/releases/latest`;
 
     try {
+      const headers: Record<string, string> = {
+        'User-Agent': 'SistemaCupomFiscal-Updater/1.0',
+        'Accept': 'application/vnd.github.v3+json',
+      };
+      if (process.env.GITHUB_TOKEN) {
+        headers['Authorization'] = `token ${process.env.GITHUB_TOKEN.trim()}`;
+      }
+
       const response = await axios.get(urlApi, {
-        headers: {
-          'User-Agent': 'SistemaCupomFiscal-Updater/1.0',
-          'Accept': 'application/vnd.github.v3+json',
-        },
+        headers,
         timeout: 10000,
       });
 
@@ -107,13 +112,18 @@ export class AutoUpdateService {
 
     // 1. Download do arquivo da release do GitHub
     const writer = fs.createWriteStream(destinoArquivo);
+    const downloadHeaders: Record<string, string> = {
+      'User-Agent': 'SistemaCupomFiscal-Updater/1.0',
+    };
+    if (process.env.GITHUB_TOKEN) {
+      downloadHeaders['Authorization'] = `token ${process.env.GITHUB_TOKEN.trim()}`;
+    }
+
     const response = await axios({
       url: urlDownload,
       method: 'GET',
       responseType: 'stream',
-      headers: {
-        'User-Agent': 'SistemaCupomFiscal-Updater/1.0',
-      },
+      headers: downloadHeaders,
     });
 
     response.data.pipe(writer);

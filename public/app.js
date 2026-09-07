@@ -647,8 +647,183 @@ if (btnSubmeterAtivacao && inputChaveAtivacao) {
   });
 }
 
+// =========================================================================
+// SISTEMA DE ATUALIZAÇÃO AUTOMÁTICA E POP-UP (GITHUB RELEASES)
+// =========================================================================
+const lblVersaoSistema = document.getElementById('lbl-versao-sistema');
+const btnVerificarAtualizacaoFooter = document.getElementById('btn-verificar-atualizacao-footer');
+const lblStatusAtualizacao = document.getElementById('lbl-status-atualizacao');
+const modalAtualizacao = document.getElementById('modal-atualizacao');
+const btnFecharModalAtualizacao = document.getElementById('btn-fechar-modal-atualizacao');
+const btnLembrarMaisTarde = document.getElementById('btn-lembrar-mais-tarde');
+const modalUpdateVersaoAtual = document.getElementById('modal-update-versao-atual');
+const modalUpdateVersaoNova = document.getElementById('modal-update-versao-nova');
+const modalUpdateData = document.getElementById('modal-update-data');
+const modalUpdateDescricao = document.getElementById('modal-update-descricao');
+const btnAplicarAtualizacao = document.getElementById('btn-aplicar-atualizacao');
+const lblBtnAplicarAtualizacao = document.getElementById('lbl-btn-aplicar-atualizacao');
+const updateProgressContainer = document.getElementById('update-progress-container');
+const updateProgressStatus = document.getElementById('update-progress-status');
+const updateProgressPercent = document.getElementById('update-progress-percent');
+const updateProgressBar = document.getElementById('update-progress-bar');
+const updateFeedbackMsg = document.getElementById('update-feedback-msg');
+
+let dadosAtualizacaoPendente = null;
+
+async function verificarAtualizacoesGitHub(abrirModalSeNaoHouver = false) {
+  const iconTarget = btnVerificarAtualizacaoFooter ? btnVerificarAtualizacaoFooter.querySelector('.spin-icon-target') : null;
+  if (iconTarget) iconTarget.classList.add('spin-icon');
+  if (lblStatusAtualizacao) lblStatusAtualizacao.innerText = 'Buscando atualizações...';
+
+  try {
+    const res = await fetch('/api/v1/sistema/atualizacao');
+    const data = await res.json();
+
+    if (data.sucesso && data.dados) {
+      const info = data.dados;
+      dadosAtualizacaoPendente = info;
+
+      if (lblVersaoSistema && info.versaoAtual) {
+        lblVersaoSistema.innerText = `v${info.versaoAtual}`;
+      }
+
+      if (info.possuiAtualizacao) {
+        // Nova versão disponível no GitHub!
+        if (lblStatusAtualizacao) {
+          lblStatusAtualizacao.innerHTML = `<span style="color: #4ade80; font-weight: 700;">Nova Versão v${info.versaoRemota}!</span>`;
+        }
+        abrirModalAtualizacao(info);
+      } else {
+        if (lblStatusAtualizacao) {
+          lblStatusAtualizacao.innerText = 'Sistema Atualizado';
+        }
+        if (abrirModalSeNaoHouver) {
+          alert(`O seu Sistema Cupom Fiscal já está atualizado na versão mais recente (v${info.versaoAtual || '1.0.2'})!`);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Falha ao verificar atualizações no GitHub:', err);
+    if (lblStatusAtualizacao) lblStatusAtualizacao.innerText = 'Verificar Atualizações';
+    if (abrirModalSeNaoHouver) {
+      alert('Não foi possível verificar atualizações no momento. Verifique sua conexão à internet.');
+    }
+  } finally {
+    if (iconTarget) iconTarget.classList.remove('spin-icon');
+  }
+}
+
+function abrirModalAtualizacao(info) {
+  if (!modalAtualizacao) return;
+
+  if (modalUpdateVersaoAtual) modalUpdateVersaoAtual.innerText = `v${info.versaoAtual || '1.0.2'}`;
+  if (modalUpdateVersaoNova) modalUpdateVersaoNova.innerText = `v${info.versaoRemota || '1.0.3'}`;
+  if (modalUpdateData && info.dataPublicacao) {
+    try {
+      const d = new Date(info.dataPublicacao);
+      modalUpdateData.innerText = `Lançada em ${d.toLocaleDateString('pt-BR')}`;
+    } catch {}
+  }
+  if (modalUpdateDescricao) {
+    modalUpdateDescricao.innerText = info.descricao || 'Melhorias de desempenho, segurança e correções fiscais.';
+  }
+
+  if (updateProgressContainer) updateProgressContainer.classList.add('hidden');
+  if (updateFeedbackMsg) updateFeedbackMsg.classList.add('hidden');
+  if (btnAplicarAtualizacao) {
+    btnAplicarAtualizacao.disabled = false;
+    if (lblBtnAplicarAtualizacao) lblBtnAplicarAtualizacao.innerText = 'Baixar e Atualizar Agora';
+  }
+
+  modalAtualizacao.classList.remove('hidden');
+}
+
+function fecharModalAtualizacao() {
+  if (modalAtualizacao) modalAtualizacao.classList.add('hidden');
+}
+
+if (btnFecharModalAtualizacao) btnFecharModalAtualizacao.addEventListener('click', fecharModalAtualizacao);
+if (btnLembrarMaisTarde) btnLembrarMaisTarde.addEventListener('click', fecharModalAtualizacao);
+
+if (btnVerificarAtualizacaoFooter) {
+  btnVerificarAtualizacaoFooter.addEventListener('click', () => {
+    verificarAtualizacoesGitHub(true);
+  });
+}
+
+if (btnAplicarAtualizacao) {
+  btnAplicarAtualizacao.addEventListener('click', async () => {
+    if (!dadosAtualizacaoPendente || !dadosAtualizacaoPendente.urlDownload) {
+      alert('URL de download não localizada para esta versão.');
+      return;
+    }
+
+    btnAplicarAtualizacao.disabled = true;
+    if (btnLembrarMaisTarde) btnLembrarMaisTarde.disabled = true;
+    if (lblBtnAplicarAtualizacao) lblBtnAplicarAtualizacao.innerText = 'Atualizando Sistema...';
+
+    if (updateProgressContainer) updateProgressContainer.classList.remove('hidden');
+    if (updateProgressStatus) updateProgressStatus.innerText = 'Baixando pacote oficial do GitHub...';
+    if (updateFeedbackMsg) updateFeedbackMsg.classList.add('hidden');
+
+    try {
+      const res = await fetch('/api/v1/sistema/atualizar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          urlDownload: dadosAtualizacaoPendente.urlDownload,
+          nomeArquivo: dadosAtualizacaoPendente.nomeArquivo,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.sucesso) {
+        throw new Error(data.erro || 'Falha ao aplicar a atualização.');
+      }
+
+      if (updateProgressStatus) updateProgressStatus.innerText = '✓ Atualização concluída com sucesso!';
+      if (updateFeedbackMsg) {
+        updateFeedbackMsg.className = 'alert-box success';
+        updateFeedbackMsg.innerHTML = '<strong>Sucesso!</strong> Os arquivos foram atualizados. Recarregando a aplicação em instantes...';
+        updateFeedbackMsg.classList.remove('hidden');
+      }
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000);
+    } catch (err) {
+      if (updateFeedbackMsg) {
+        updateFeedbackMsg.className = 'alert-box error';
+        updateFeedbackMsg.innerText = `Erro ao atualizar: ${err.message}`;
+        updateFeedbackMsg.classList.remove('hidden');
+      }
+      btnAplicarAtualizacao.disabled = false;
+      if (btnLembrarMaisTarde) btnLembrarMaisTarde.disabled = false;
+      if (lblBtnAplicarAtualizacao) lblBtnAplicarAtualizacao.innerText = 'Tentar Novamente';
+    }
+  });
+}
+
 // Inicialização
 verificarStatusLicenca();
 verificarCertificadoStatus();
 carregarHistorico();
-verificarAtualizacoesGitHub();
+verificarAtualizacoesGitHub(false);
+
+// Permite testar/visualizar o Pop-up de Atualização com ?testUpdate=1
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('testUpdate') === '1') {
+  setTimeout(() => {
+    abrirModalAtualizacao({
+      possuiAtualizacao: true,
+      versaoAtual: '1.0.2',
+      versaoRemota: '1.0.3',
+      nomeRelease: 'Versão 1.0.3 Oficial',
+      dataPublicacao: new Date().toISOString(),
+      descricao: '• Novo ícone oficial em alta resolução Guará Segurança e Internet no instalador e atalho da Área de Trabalho\n• Exibição da versão no rodapé do sistema com checagem automática\n• Pop-up de notificação de novas atualizações do GitHub com 1 clique\n• Otimizações na geração de DANFE PDF e consulta SEFAZ',
+      urlDownload: 'https://github.com/joenanda/cupom_fiscal/releases/download/v1.0.2/update-v1.0.2.zip',
+      nomeArquivo: 'update-v1.0.2.zip',
+    });
+  }, 600);
+}
+

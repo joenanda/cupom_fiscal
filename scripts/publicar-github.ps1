@@ -55,7 +55,7 @@ $installerSource = Join-Path $baseDir "installer\Setup.cs"
 $installerExe = Join-Path $baseDir "release\Instalador_SistemaCupomFiscal.exe"
 $installerIcon = Join-Path $baseDir "installer\app.ico"
 $installerLogo = Join-Path $baseDir "installer\logo_thumb.png"
-& $cscPath /target:winexe "/out:$installerExe" /r:System.Windows.Forms.dll /r:System.Drawing.dll "/resource:$installerLogo,Logo" "/win32icon:$installerIcon" "$installerSource"
+& $cscPath /target:winexe "/out:$installerExe" /r:System.Windows.Forms.dll /r:System.Drawing.dll "/resource:$installerLogo,Logo" "/resource:$installerIcon,AppIcon" "/win32icon:$installerIcon" "$installerSource"
 
 # 4. Cria arquivo ZIP de atualizacao leve (update-vX.X.X.zip)
 $zipUpdatePath = Join-Path $baseDir "release\update-v$versaoAtual.zip"
@@ -63,7 +63,7 @@ Write-Host "`n[2/5] Compactando pacote de atualizacao rapida ($zipUpdatePath)...
 if (Test-Path $zipUpdatePath) { Remove-Item $zipUpdatePath -Force }
 
 Push-Location (Join-Path $baseDir "release")
-& "C:\Windows\System32\tar.exe" -a -cf "update-v$versaoAtual.zip" dist public scripts SistemaCupomFiscal.exe
+& "C:\Windows\System32\tar.exe" -a -cf "update-v$versaoAtual.zip" dist public scripts app.ico logo.png SistemaCupomFiscal.exe
 Pop-Location
 
 # 5. Cria pacote completo ZIP
@@ -72,7 +72,7 @@ Write-Host "[3/5] Compactando pacote completo ($zipCompletoPath)..." -Foreground
 if (Test-Path $zipCompletoPath) { Remove-Item $zipCompletoPath -Force }
 
 Push-Location (Join-Path $baseDir "release")
-& "C:\Windows\System32\tar.exe" -a -cf "SistemaCupomFiscal-completo.zip" bin dist public scripts node_modules .env SistemaCupomFiscal.exe Criar_Atalho_Area_de_Trabalho.bat
+& "C:\Windows\System32\tar.exe" -a -cf "SistemaCupomFiscal-completo.zip" bin dist public scripts node_modules .env app.ico logo.png SistemaCupomFiscal.exe Criar_Atalho_Area_de_Trabalho.bat
 Pop-Location
 
 # 6. Inicializacao e Configuracao do Git

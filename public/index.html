@@ -400,11 +400,92 @@
       </div>
     </div>
 
-    <!-- RODAPÉ OFICIAL GUARÁ -->
+    <!-- MODAL DE ATUALIZAÇÃO AUTOMÁTICA DO SISTEMA -->
+    <div id="modal-atualizacao" class="modal-backdrop hidden">
+      <div class="modal-box modal-md">
+        <div class="modal-header">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <img src="assets/logo.png" alt="Guará" style="width: 38px; height: 38px; border-radius: 8px; object-fit: contain;">
+            <div>
+              <h3 style="margin: 0; font-size: 1.15rem; color: #f8fafc; display: flex; align-items: center; gap: 8px;">
+                <span>🚀 Nova Atualização Disponível!</span>
+              </h3>
+              <span style="font-size: 0.75rem; color: #f97316; font-weight: 700; letter-spacing: 0.5px;">GUARÁ SEGURANÇA E INTERNET</span>
+            </div>
+          </div>
+          <button class="modal-close" id="btn-fechar-modal-atualizacao">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 24px;">
+          <!-- Comparação de Versões -->
+          <div class="update-version-card">
+            <div class="update-version-item">
+              <span class="update-version-label">Sua Versão Atual</span>
+              <span class="update-version-number" id="modal-update-versao-atual">v1.0.2</span>
+            </div>
+            <div class="update-version-arrow">➔</div>
+            <div class="update-version-item update-version-new">
+              <span class="update-version-label">Nova Versão</span>
+              <span class="update-version-number" id="modal-update-versao-nova">v1.0.3</span>
+            </div>
+          </div>
+
+          <!-- Informações e Notas de Atualização -->
+          <div class="form-group" style="margin-top: 18px;">
+            <label class="input-label" style="display: flex; justify-content: space-between; align-items: center;">
+              <span>O que há de novo nesta versão:</span>
+              <span id="modal-update-data" style="font-size: 0.72rem; color: #94a3b8; font-weight: normal;"></span>
+            </label>
+            <div id="modal-update-descricao" class="update-notes-box">Carregando notas da versão...</div>
+          </div>
+
+          <!-- Barra de Progresso de Download / Instalação -->
+          <div id="update-progress-container" class="hidden" style="margin-top: 18px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 6px;">
+              <span id="update-progress-status" style="color: #38bdf8; font-weight: 600;">Baixando atualização do GitHub...</span>
+              <span id="update-progress-percent" style="color: #94a3b8;">Aguarde...</span>
+            </div>
+            <div class="progress-track">
+              <div id="update-progress-bar" class="progress-fill" style="width: 100%;"></div>
+            </div>
+          </div>
+
+          <div id="update-feedback-msg" class="alert-box hidden" style="margin-top: 14px;"></div>
+        </div>
+        <div class="modal-footer" style="padding: 16px 24px; display: flex; gap: 12px; justify-content: flex-end;">
+          <button type="button" class="btn-secondary" id="btn-lembrar-mais-tarde">
+            Lembrar Mais Tarde
+          </button>
+          <button type="button" class="btn-primary" id="btn-aplicar-atualizacao" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span id="lbl-btn-aplicar-atualizacao">Baixar e Atualizar Agora</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RODAPÉ OFICIAL GUARÁ COM VERSÃO E CHECAGEM DE ATUALIZAÇÃO -->
     <footer class="app-footer">
       <div class="footer-content">
-        <img src="assets/logo.png" alt="Guará" class="footer-mini-logo">
-        <span>Sistema Cupom Fiscal Eletrônico NFC-e (Modelo 65) • Criado e desenvolvido por <strong>GUARÁ SEGURANÇA E INTERNET</strong></span>
+        <div class="footer-brand-side">
+          <img src="assets/logo.png" alt="Guará" class="footer-mini-logo">
+          <span>Sistema Cupom Fiscal Eletrônico NFC-e (Modelo 65) • Criado e desenvolvido por <strong>GUARÁ SEGURANÇA E INTERNET</strong></span>
+        </div>
+        <div class="footer-version-side">
+          <span class="footer-badge" id="footer-version-badge" title="Versão atual instalada do sistema">
+            Versão: <strong id="lbl-versao-sistema">v1.0.2</strong>
+          </span>
+          <button type="button" id="btn-verificar-atualizacao-footer" class="footer-link-btn" title="Clique para verificar se há novas atualizações no GitHub">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin-icon-target">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+            <span id="lbl-status-atualizacao">Verificar Atualizações</span>
+          </button>
+        </div>
       </div>
     </footer>
   </div>

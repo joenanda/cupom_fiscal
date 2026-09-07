@@ -72,14 +72,40 @@ namespace SistemaCupomFiscal.Installer
             return null;
         }
 
+        [System.Runtime.InteropServices.DllImport("shell32.dll")]
+        public static extern void SHChangeNotify(int wEventId, int uFlags, IntPtr dwItem1, IntPtr dwItem2);
+
         public static void CriarAtalhos(string installDir, string installedExe)
         {
             try
             {
                 string iconPath = Path.Combine(installDir, "app.ico");
+
+                // 1. Se app.ico não existir no destino, extrai do recurso embutido AppIcon
+                if (!File.Exists(iconPath))
+                {
+                    try
+                    {
+                        Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream("AppIcon");
+                        if (s != null)
+                        {
+                            using (FileStream fs = new FileStream(iconPath, FileMode.Create, FileAccess.Write))
+                            {
+                                byte[] buffer = new byte[8192];
+                                int bytesRead;
+                                while ((bytesRead = s.Read(buffer, 0, buffer.Length)) > 0)
+                                {
+                                    fs.Write(buffer, 0, bytesRead);
+                                }
+                            }
+                        }
+                    }
+                    catch { }
+                }
+
                 if (!File.Exists(iconPath)) iconPath = installedExe;
 
-                // Atalho na Área de Trabalho
+                // Atalho na Área de Trabalho com o ícone oficial da Guará Segurança e Internet
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
                 string shortcutDesktop = Path.Combine(desktopPath, "Sistema Cupom Fiscal NFC-e.lnk");
                 CreateShortcut(shortcutDesktop, installedExe, installDir, "Sistema de Download de Cupom Fiscal NFC-e (Mod 65) - GUARÁ SEGURANÇA E INTERNET", iconPath);
@@ -92,6 +118,13 @@ namespace SistemaCupomFiscal.Installer
                 }
                 string shortcutStart = Path.Combine(startMenuPath, "Sistema Cupom Fiscal NFC-e.lnk");
                 CreateShortcut(shortcutStart, installedExe, installDir, "Sistema Fiscal NFC-e - GUARÁ SEGURANÇA E INTERNET", iconPath);
+
+                // Força o Windows Explorer a atualizar imediatamente o cache de ícones da Área de Trabalho
+                try
+                {
+                    SHChangeNotify(0x08000000 /* SHCNE_ASSOCCHANGED */, 0x0000 /* SHCNF_IDLIST */, IntPtr.Zero, IntPtr.Zero);
+                }
+                catch { }
             }
             catch { }
         }
@@ -106,7 +139,10 @@ namespace SistemaCupomFiscal.Installer
                 shortcut.TargetPath = targetPath;
                 shortcut.WorkingDirectory = workingDir;
                 shortcut.Description = description;
-                shortcut.IconLocation = iconPath + ",0";
+                if (!string.IsNullOrEmpty(iconPath) && File.Exists(iconPath))
+                {
+                    shortcut.IconLocation = iconPath + ",0";
+                }
                 shortcut.Save();
             }
             catch { }
