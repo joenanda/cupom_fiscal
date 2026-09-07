@@ -1,7 +1,7 @@
 {
     "name":  "sistema-cupom-fiscal",
-    "version":  "1.0.5",
-    "description":  "Sistema de Download e Processamento de Cupom Fiscal EletrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â´nico (NFC-e Modelo 65)",
+    "version":  "1.0.6",
+    "description":  "Sistema de Download e Processamento de Cupom Fiscal EletrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â´nico (NFC-e Modelo 65)",
     "main":  "dist/src/server.js",
     "bin":  "dist/src/server.js",
     "scripts":  {

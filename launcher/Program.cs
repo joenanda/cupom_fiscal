@@ -213,11 +213,80 @@ namespace SistemaCupomFiscal
         }
 
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
+            if (args.Length > 0 && args[0].Equals("/uninstall", StringComparison.OrdinalIgnoreCase))
+            {
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                ExecutarDesinstalacao();
+                return;
+            }
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());
+        }
+
+        static void ExecutarDesinstalacao()
+        {
+            DialogResult res = MessageBox.Show("Tem certeza que deseja desinstalar o Sistema Cupom Fiscal NFC-e do seu computador?", "Desinstalação do Sistema", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if (res != DialogResult.Yes) return;
+
+            try
+            {
+                string installDir = AppDomain.CurrentDomain.BaseDirectory.TrimEnd('\\');
+                
+                // 1. Remove Registro do Painel de Controle (Adicionar/Remover Programas)
+                try
+                {
+                    Microsoft.Win32.RegistryKey key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall", true);
+                    if (key != null)
+                    {
+                        key.DeleteSubKeyTree("SistemaCupomFiscal", false);
+                        key.Close();
+                    }
+                }
+                catch { }
+
+                // 2. Remove Atalho da Área de Trabalho
+                try
+                {
+                    string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+                    string shortcutDesktop = Path.Combine(desktopPath, "Sistema Cupom Fiscal NFC-e.lnk");
+                    if (File.Exists(shortcutDesktop)) File.Delete(shortcutDesktop);
+                }
+                catch { }
+
+                // 3. Remove Atalhos do Menu Iniciar
+                try
+                {
+                    string startMenuPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), "Programs", "Sistema Cupom Fiscal");
+                    if (Directory.Exists(startMenuPath)) Directory.Delete(startMenuPath, true);
+                }
+                catch { }
+
+                // 4. Cria script temporário para apagar a pasta da aplicação e fechar o executável atual
+                string tempBat = Path.Combine(Path.GetTempPath(), "uninstall_cupomfiscal.bat");
+                string batContent = $"@echo off\r\n" +
+                                    $"echo Aguardando fechamento do executavel...\r\n" +
+                                    $"timeout /t 3 /nobreak > nul\r\n" +
+                                    $"rmdir /s /q \"{installDir}\"\r\n" +
+                                    $"del \"%~f0\"";
+                File.WriteAllText(tempBat, batContent);
+
+                ProcessStartInfo psi = new ProcessStartInfo();
+                psi.FileName = tempBat;
+                psi.WindowStyle = ProcessWindowStyle.Hidden;
+                psi.CreateNoWindow = true;
+                Process.Start(psi);
+
+                MessageBox.Show("O Sistema Cupom Fiscal NFC-e foi desinstalado com sucesso do seu computador.", "Desinstalação Concluída", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ocorreu um erro durante a desinstalação:\n" + ex.Message, "Erro na Desinstalação", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }

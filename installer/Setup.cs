@@ -116,6 +116,27 @@ namespace SistemaCupomFiscal.Installer
                 string shortcutStart = Path.Combine(startMenuPath, "Sistema Cupom Fiscal NFC-e.lnk");
                 CreateShortcut(shortcutStart, installedExe, installDir, "Sistema Fiscal NFC-e - GUARÁ SEGURANÇA E INTERNET", iconPath);
 
+                // Atalho de Desinstalação no Menu Iniciar
+                string shortcutUninstall = Path.Combine(startMenuPath, "Desinstalar Sistema.lnk");
+                CreateShortcut(shortcutUninstall, installedExe, installDir, "Desinstalar o Sistema Cupom Fiscal NFC-e", "", "/uninstall");
+
+                // Registrar no Adicionar/Remover Programas (Painel de Controle)
+                try
+                {
+                    using (Microsoft.Win32.RegistryKey key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall\SistemaCupomFiscal"))
+                    {
+                        key.SetValue("DisplayName", "Sistema Cupom Fiscal NFC-e");
+                        key.SetValue("DisplayVersion", "1.0.6");
+                        key.SetValue("Publisher", "GUARÁ SEGURANÇA E INTERNET");
+                        key.SetValue("DisplayIcon", iconPath);
+                        key.SetValue("UninstallString", $"\"{installedExe}\" /uninstall");
+                        key.SetValue("QuietUninstallString", $"\"{installedExe}\" /uninstall");
+                        key.SetValue("NoModify", 1);
+                        key.SetValue("NoRepair", 1);
+                    }
+                }
+                catch { }
+
                 // Força o Windows Explorer a atualizar imediatamente o cache de ícones da Área de Trabalho
                 try
                 {
@@ -126,7 +147,7 @@ namespace SistemaCupomFiscal.Installer
             catch { }
         }
 
-        private static void CreateShortcut(string shortcutPath, string targetPath, string workingDir, string description, string iconPath)
+        private static void CreateShortcut(string shortcutPath, string targetPath, string workingDir, string description, string iconPath, string arguments = "")
         {
             try
             {
@@ -134,6 +155,7 @@ namespace SistemaCupomFiscal.Installer
                 dynamic shell = Activator.CreateInstance(shellType);
                 dynamic shortcut = shell.CreateShortcut(shortcutPath);
                 shortcut.TargetPath = targetPath;
+                shortcut.Arguments = arguments;
                 shortcut.WorkingDirectory = workingDir;
                 shortcut.Description = description;
                 if (!string.IsNullOrEmpty(iconPath) && File.Exists(iconPath))
