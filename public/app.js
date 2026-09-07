@@ -784,13 +784,16 @@ if (btnAplicarAtualizacao) {
       if (updateProgressStatus) updateProgressStatus.innerText = '✓ Atualização concluída com sucesso!';
       if (updateFeedbackMsg) {
         updateFeedbackMsg.className = 'alert-box success';
-        updateFeedbackMsg.innerHTML = '<strong>Sucesso!</strong> Os arquivos foram atualizados. Recarregando a aplicação em instantes...';
+        updateFeedbackMsg.innerHTML = '<strong>Sucesso!</strong> Sistema atualizado. <strong>Feche o sistema e abra novamente</strong> pelo atalho da Área de Trabalho para aplicar as novidades!';
         updateFeedbackMsg.classList.remove('hidden');
       }
 
+      // Chama a rota para encerrar o servidor no backend (opcional, ou espera o usuário fechar)
       setTimeout(() => {
-        window.location.reload();
-      }, 3000);
+        fetch('/api/v1/sistema/encerrar', { method: 'POST' }).catch(() => {});
+        alert("O sistema foi atualizado e será encerrado agora. Por favor, abra-o novamente pelo atalho na sua Área de Trabalho.");
+        window.close(); // Tenta fechar a aba
+      }, 3500);
     } catch (err) {
       if (updateFeedbackMsg) {
         updateFeedbackMsg.className = 'alert-box error';
