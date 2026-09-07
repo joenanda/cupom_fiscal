@@ -129,8 +129,8 @@ namespace SistemaCupomFiscal.Installer
                         key.SetValue("DisplayVersion", "1.0.6");
                         key.SetValue("Publisher", "GUARÁ SEGURANÇA E INTERNET");
                         key.SetValue("DisplayIcon", iconPath);
-                        key.SetValue("UninstallString", $"\"{installedExe}\" /uninstall");
-                        key.SetValue("QuietUninstallString", $"\"{installedExe}\" /uninstall");
+                        key.SetValue("UninstallString", string.Format("\"{0}\" /uninstall", installedExe));
+                        key.SetValue("QuietUninstallString", string.Format("\"{0}\" /uninstall", installedExe));
                         key.SetValue("NoModify", 1);
                         key.SetValue("NoRepair", 1);
                     }

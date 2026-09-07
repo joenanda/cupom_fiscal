@@ -268,11 +268,11 @@ namespace SistemaCupomFiscal
 
                 // 4. Cria script temporário para apagar a pasta da aplicação e fechar o executável atual
                 string tempBat = Path.Combine(Path.GetTempPath(), "uninstall_cupomfiscal.bat");
-                string batContent = $"@echo off\r\n" +
-                                    $"echo Aguardando fechamento do executavel...\r\n" +
-                                    $"timeout /t 3 /nobreak > nul\r\n" +
-                                    $"rmdir /s /q \"{installDir}\"\r\n" +
-                                    $"del \"%~f0\"";
+                string batContent = string.Format("@echo off\r\n" +
+                                    "echo Aguardando fechamento do executavel...\r\n" +
+                                    "timeout /t 3 /nobreak > nul\r\n" +
+                                    "rmdir /s /q \"{0}\"\r\n" +
+                                    "del \"%~f0\"", installDir);
                 File.WriteAllText(tempBat, batContent);
 
                 ProcessStartInfo psi = new ProcessStartInfo();
