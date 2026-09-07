@@ -148,14 +148,16 @@ if ($Token) {
                 "Content-Type" = "application/octet-stream"
                 "User-Agent" = "SistemaCupomFiscal-Deployer/1.0"
             }
-            Invoke-RestMethod -Uri "$uploadBase?name=Instalador_SistemaCupomFiscal.exe" -Method Post -Headers $upHeaders -Body $installerBytes | Out-Null
+            $targetUri = "$($uploadBase)?name=Instalador_SistemaCupomFiscal.exe"
+            Invoke-RestMethod -Uri $targetUri -Method Post -Headers $upHeaders -Body $installerBytes | Out-Null
             Write-Host "[OK] Instalador_SistemaCupomFiscal.exe anexado!" -ForegroundColor Green
 
             # Upload Update Zip
             if (Test-Path $zipUpdatePath) {
                 Write-Host "[GitHub API] Fazendo upload do update-v$versaoAtual.zip..." -ForegroundColor Yellow
                 $zipBytes = [System.IO.File]::ReadAllBytes($zipUpdatePath)
-                Invoke-RestMethod -Uri "$uploadBase?name=update-v$versaoAtual.zip" -Method Post -Headers $upHeaders -Body $zipBytes | Out-Null
+                $targetUri = "$($uploadBase)?name=update-v$versaoAtual.zip"
+                Invoke-RestMethod -Uri $targetUri -Method Post -Headers $upHeaders -Body $zipBytes | Out-Null
                 Write-Host "[OK] update-v$versaoAtual.zip anexado!" -ForegroundColor Green
             }
 
@@ -163,7 +165,8 @@ if ($Token) {
             if (Test-Path $zipCompletoPath) {
                 Write-Host "[GitHub API] Fazendo upload do SistemaCupomFiscal-completo.zip..." -ForegroundColor Yellow
                 $completoBytes = [System.IO.File]::ReadAllBytes($zipCompletoPath)
-                Invoke-RestMethod -Uri "$uploadBase?name=SistemaCupomFiscal-completo.zip" -Method Post -Headers $upHeaders -Body $completoBytes | Out-Null
+                $targetUri = "$($uploadBase)?name=SistemaCupomFiscal-completo.zip"
+                Invoke-RestMethod -Uri $targetUri -Method Post -Headers $upHeaders -Body $completoBytes | Out-Null
                 Write-Host "[OK] SistemaCupomFiscal-completo.zip anexado!" -ForegroundColor Green
             }
         }
