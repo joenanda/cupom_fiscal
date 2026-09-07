@@ -35,6 +35,7 @@ Copy-Item -Path (Join-Path $baseDir "dist") -Destination $releaseDir -Recurse -F
 Copy-Item -Path (Join-Path $baseDir "public") -Destination $releaseDir -Recurse -Force
 Copy-Item -Path (Join-Path $baseDir "scripts") -Destination $releaseDir -Recurse -Force
 Copy-Item -Path (Join-Path $baseDir "node_modules") -Destination $releaseDir -Recurse -Force
+Copy-Item -Path (Join-Path $baseDir "package.json") -Destination $releaseDir -Force
 
 # Copia arquivo .env padrão
 Set-Content -Path (Join-Path $releaseDir ".env") -Value @"

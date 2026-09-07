@@ -56,7 +56,7 @@ Write-Host "`n[2/5] Compactando pacote de atualizacao rapida ($zipUpdatePath)...
 if (Test-Path $zipUpdatePath) { Remove-Item $zipUpdatePath -Force }
 
 Push-Location (Join-Path $baseDir "release")
-& "C:\Windows\System32\tar.exe" -a -cf "update-v$versaoAtual.zip" dist public scripts app.ico logo.png SistemaCupomFiscal.exe
+& "C:\Windows\System32\tar.exe" -a -cf "update-v$versaoAtual.zip" dist public scripts package.json app.ico logo.png SistemaCupomFiscal.exe
 Pop-Location
 
 # 5. Cria pacote completo ZIP
@@ -65,7 +65,7 @@ Write-Host "[3/5] Compactando pacote completo ($zipCompletoPath)..." -Foreground
 if (Test-Path $zipCompletoPath) { Remove-Item $zipCompletoPath -Force }
 
 Push-Location (Join-Path $baseDir "release")
-& "C:\Windows\System32\tar.exe" -a -cf "SistemaCupomFiscal-completo.zip" bin dist public scripts node_modules .env app.ico logo.png SistemaCupomFiscal.exe Criar_Atalho_Area_de_Trabalho.bat
+& "C:\Windows\System32\tar.exe" -a -cf "SistemaCupomFiscal-completo.zip" bin dist public scripts node_modules package.json .env app.ico logo.png SistemaCupomFiscal.exe Criar_Atalho_Area_de_Trabalho.bat
 Pop-Location
 
 # 5.1 Compila Instalador Offline com o Zip Embutido
