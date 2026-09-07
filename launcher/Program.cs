@@ -87,8 +87,17 @@ namespace SistemaCupomFiscal
                 if (serverProcess != null)
                 {
                     serverProcess.EnableRaisingEvents = true;
-                    // Se o servidor for encerrado via botão da tela web, fecha o launcher imediatamente
+                    // Se o servidor for encerrado via botão da tela web, fecha o launcher imediatamente na UI thread
                     serverProcess.Exited += (s, e) => {
+                        try
+                        {
+                            if (this.IsHandleCreated)
+                            {
+                                this.BeginInvoke(new Action(EncerrarTudo));
+                                return;
+                            }
+                        }
+                        catch { }
                         EncerrarTudo();
                     };
                 }
@@ -163,9 +172,13 @@ namespace SistemaCupomFiscal
                 if (trayIcon != null)
                 {
                     trayIcon.Visible = false;
+                    trayIcon.Icon = null;
                     trayIcon.Dispose();
                     trayIcon = null;
                 }
+
+                // Permite ao Windows Explorer processar o fechamento imediato do ícone da bandeja
+                Application.DoEvents();
 
                 if (serverProcess != null && !serverProcess.HasExited)
                 {
@@ -176,7 +189,7 @@ namespace SistemaCupomFiscal
                         psiKill.CreateNoWindow = true;
                         psiKill.UseShellExecute = false;
                         Process p = Process.Start(psiKill);
-                        p.WaitForExit(1500);
+                        p.WaitForExit(1000);
                     }
                     catch { }
 
@@ -189,6 +202,7 @@ namespace SistemaCupomFiscal
             catch { }
             finally
             {
+                Application.Exit();
                 Environment.Exit(0);
             }
         }

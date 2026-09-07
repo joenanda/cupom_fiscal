@@ -326,7 +326,35 @@ export class CupomFiscalController {
 
     setTimeout(() => {
       console.log('>>> [SHUTDOWN] Encerrando processo do servidor fiscal e aplicação...');
-      process.exit(0);
+      try {
+        const { exec } = require('child_process');
+        exec('taskkill /IM SistemaCupomFiscal.exe /F', () => {
+          process.exit(0);
+        });
+      } catch {
+        process.exit(0);
+      }
     }, 500);
+  };
+
+  /**
+   * GET /api/v1/licenca/status
+   * Consulta status de ativação e Machine ID desta máquina
+   */
+  public statusLicenca = async (_req: Request, res: Response): Promise<void> => {
+    const { LicenseService } = await import('../services/license/license.service');
+    const status = LicenseService.verificarStatusLicenca();
+    res.json({ sucesso: true, dados: status });
+  };
+
+  /**
+   * POST /api/v1/licenca/ativar
+   * Ativa a máquina com a chave fornecida pela Guará
+   */
+  public ativarLicenca = async (req: Request, res: Response): Promise<void> => {
+    const { chave } = req.body;
+    const { LicenseService } = await import('../services/license/license.service');
+    const status = LicenseService.ativarComChave(chave);
+    res.json({ sucesso: true, dados: status });
   };
 }

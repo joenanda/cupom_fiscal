@@ -532,7 +532,123 @@ if (btnEncerrarSistema && modalEncerrar) {
   }
 }
 
+// =========================================================================
+// SISTEMA DE LICENCIAMENTO E ATIVAÇÃO GUARÁ
+// =========================================================================
+const btnModalLicenca = document.getElementById('btn-modal-licenca');
+const licenseDot = document.getElementById('license-dot');
+const licenseStatusText = document.getElementById('license-status-text');
+const modalAtivacao = document.getElementById('modal-ativacao');
+const btnCloseModalAtivacao = document.getElementById('btn-close-modal-ativacao');
+const inputMachineId = document.getElementById('input-machine-id');
+const btnCopiarMachineId = document.getElementById('btn-copiar-machine-id');
+const inputChaveAtivacao = document.getElementById('input-chave-ativacao');
+const btnSubmeterAtivacao = document.getElementById('btn-submeter-ativacao');
+const licencaStatusMsg = document.getElementById('licenca-status-msg');
+
+let statusLicencaAtual = null;
+
+async function verificarStatusLicenca() {
+  try {
+    const res = await fetch('/api/v1/licenca/status');
+    const data = await res.json();
+
+    if (data.sucesso && data.dados) {
+      statusLicencaAtual = data.dados;
+      if (inputMachineId) inputMachineId.value = data.dados.machineId;
+
+      if (data.dados.ativado) {
+        if (licenseDot) licenseDot.className = 'status-dot dot-active';
+        if (btnModalLicenca) btnModalLicenca.classList.remove('blocked');
+        const tipoLabel = data.dados.tipo || 'Ativa';
+        if (licenseStatusText) licenseStatusText.innerText = `Licença: ${tipoLabel}`;
+        if (modalAtivacao) modalAtivacao.classList.add('hidden');
+        if (btnCloseModalAtivacao) btnCloseModalAtivacao.style.display = 'block';
+      } else {
+        if (licenseDot) licenseDot.className = 'status-dot dot-error';
+        if (btnModalLicenca) btnModalLicenca.classList.add('blocked');
+        if (licenseStatusText) licenseStatusText.innerText = 'Licença: Bloqueado (Ativar)';
+        if (modalAtivacao) modalAtivacao.classList.remove('hidden');
+        if (btnCloseModalAtivacao) btnCloseModalAtivacao.style.display = 'none';
+      }
+    }
+  } catch (err) {
+    console.warn('Erro ao checar licença:', err);
+  }
+}
+
+if (btnModalLicenca && modalAtivacao) {
+  btnModalLicenca.addEventListener('click', () => {
+    modalAtivacao.classList.remove('hidden');
+  });
+}
+
+if (btnCloseModalAtivacao && modalAtivacao) {
+  btnCloseModalAtivacao.addEventListener('click', () => {
+    if (statusLicencaAtual && statusLicencaAtual.ativado) {
+      modalAtivacao.classList.add('hidden');
+    }
+  });
+}
+
+if (btnCopiarMachineId && inputMachineId) {
+  btnCopiarMachineId.addEventListener('click', () => {
+    if (inputMachineId.value) {
+      navigator.clipboard.writeText(inputMachineId.value);
+      btnCopiarMachineId.innerHTML = '<span>✓ Copiado!</span>';
+      setTimeout(() => {
+        btnCopiarMachineId.innerHTML = '<span>Copiar ID</span>';
+      }, 2000);
+    }
+  });
+}
+
+if (btnSubmeterAtivacao && inputChaveAtivacao) {
+  btnSubmeterAtivacao.addEventListener('click', async () => {
+    const chave = inputChaveAtivacao.value.trim();
+    if (!chave) {
+      licencaStatusMsg.className = 'alert-box error';
+      licencaStatusMsg.innerText = 'Por favor, cole sua chave de ativação.';
+      licencaStatusMsg.classList.remove('hidden');
+      return;
+    }
+
+    btnSubmeterAtivacao.disabled = true;
+    btnSubmeterAtivacao.innerText = 'Validando Chave...';
+    licencaStatusMsg.classList.add('hidden');
+
+    try {
+      const res = await fetch('/api/v1/licenca/ativar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chave }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.sucesso) {
+        throw new Error(data.erro || 'Chave inválida para este computador.');
+      }
+
+      licencaStatusMsg.className = 'alert-box success';
+      licencaStatusMsg.innerHTML = `✓ ${data.dados.mensagem || 'Sistema ativado com sucesso!'}`;
+      licencaStatusMsg.classList.remove('hidden');
+
+      setTimeout(() => {
+        verificarStatusLicenca();
+      }, 1500);
+    } catch (err) {
+      licencaStatusMsg.className = 'alert-box error';
+      licencaStatusMsg.innerText = `Erro: ${err.message}`;
+      licencaStatusMsg.classList.remove('hidden');
+    } finally {
+      btnSubmeterAtivacao.disabled = false;
+      btnSubmeterAtivacao.innerText = 'Ativar Sistema Agora';
+    }
+  });
+}
+
 // Inicialização
+verificarStatusLicenca();
 verificarCertificadoStatus();
 carregarHistorico();
 verificarAtualizacoesGitHub();

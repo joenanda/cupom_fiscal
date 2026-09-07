@@ -29,6 +29,16 @@
       </div>
 
       <div class="header-actions">
+        <!-- Indicador de Status da Licença Guará -->
+        <button id="btn-modal-licenca" class="license-status-btn" title="Status da Licença Guará">
+          <span class="status-dot dot-active" id="license-dot"></span>
+          <span id="license-status-text">Licença: Verificando...</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </button>
+
         <!-- Indicador de Status do Certificado A1 -->
         <button id="btn-modal-cert" class="cert-status-btn" title="Gerenciar Certificado A1">
           <span class="status-dot dot-active"></span>
@@ -340,6 +350,52 @@
         <div class="modal-footer">
           <button type="button" class="btn-secondary" id="btn-cancelar-encerrar">Cancelar</button>
           <button type="button" class="btn-danger" id="btn-confirmar-encerrar">Sim, Encerrar Sistema</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE ATIVAÇÃO / BLOQUEIO DE SISTEMA -->
+    <div id="modal-ativacao" class="modal-backdrop hidden">
+      <div class="modal-box modal-md">
+        <div class="modal-header">
+          <div class="modal-title-group" style="display: flex; align-items: center; gap: 12px;">
+            <img src="assets/logo.png" alt="Guará" style="width: 36px; height: 36px; object-fit: contain;">
+            <div>
+              <h3>Ativação do Sistema Fiscal</h3>
+              <p style="font-size: 0.72rem; color: #f97316; font-weight: 700; margin: 0;">GUARÁ SEGURANÇA E INTERNET</p>
+            </div>
+          </div>
+          <button class="modal-close" id="btn-close-modal-ativacao" style="display: none;">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="alert-box" style="background: rgba(249, 115, 22, 0.12); border: 1px solid rgba(249, 115, 22, 0.3); color: #fb923c; margin-bottom: 20px;">
+            <strong>🔒 Licença Necessária:</strong> Este software é protegido contra cópias não autorizadas e requer ativação para este computador.
+          </div>
+
+          <div class="form-group">
+            <label class="input-label">ID Único Deste Computador (Machine ID):</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="input-machine-id" readonly class="text-input" style="font-family: var(--font-mono); font-weight: 700; letter-spacing: 0.05em; color: #38bdf8; background: #0b0f19;">
+              <button type="button" id="btn-copiar-machine-id" class="btn-secondary" style="white-space: nowrap; padding: 0 16px;">
+                <span>Copiar ID</span>
+              </button>
+            </div>
+            <p style="font-size: 0.78rem; color: #94a3b8; margin-top: 6px;">
+              Envie este código para a <strong>GUARÁ SEGURANÇA E INTERNET</strong> para gerar sua Chave de Ativação.
+            </p>
+          </div>
+
+          <div class="form-group" style="margin-top: 20px;">
+            <label for="input-chave-ativacao" class="input-label">Chave de Ativação / Licença:</label>
+            <textarea id="input-chave-ativacao" rows="3" placeholder="Cole aqui a chave recebida (GUARA-ACT-...)" class="text-input" style="font-family: var(--font-mono); font-size: 0.78rem; resize: none;"></textarea>
+          </div>
+
+          <div id="licenca-status-msg" class="alert-box hidden"></div>
+        </div>
+        <div class="modal-footer" style="padding: 16px 24px;">
+          <button type="button" class="btn-primary" id="btn-submeter-ativacao" style="width: 100%; justify-content: center; padding: 12px; font-size: 0.95rem;">
+            Ativar Sistema Agora
+          </button>
         </div>
       </div>
     </div>

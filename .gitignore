@@ -5,6 +5,8 @@ storage/documents/*.xml
 storage/documents/*.pdf
 storage/certificates/*
 !storage/certificates/.gitkeep
+storage/*.key
+storage/licenca.key
 storage/temp_update/
 release/
 .env
